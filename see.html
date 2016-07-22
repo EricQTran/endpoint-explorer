@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Super Endpoint Explorer</title>
+
+	<!--Bootstrap-->
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+
+	<style type="text/css">
+	
+	.dropdown{
+		display: inline-block;
+	}
+	form{
+		display: inline-block;
+	}
+	#nav-tab{
+		padding: 10px 10px 10px 10px;
+	}
+
+	</style>
+</head>
+<body>
+	<div class="page-header">
+		<h1>Super Endpoint Explorer</h1>
+	</div>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+
+	<script src="js/bootstrap.min.js"></script>
+
+	<div class="dropdown">
+   	<button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Http Method
+ 	<span class="caret"></span></button>
+ 		<ul class="dropdown-menu">
+   			 <li>GET</li>
+   			 <li>POST</li>
+  		</ul>
+	</div>
+
+	<form>	
+	Custom Request:	<input type="url" name="customRequest" id="customRequestBox">
+	</form>
+
+	<button type="button" class="btn btn-primary" onclick="submitRequest();" id="sendBtn">Send</button>
+
+	<ul class="nav nav-tabs" id="nav-tab">
+ 	 <li><a href="#">Headers</a></li>
+	</ul>
+
+	<script type="text/javascript">
+		
+		function submitRequest()
+		{
+			var requestBox = document.getElementById("customRequestBox");
+
+			requestBox.value = "bam!"
+		}
+
+
+	</script>
+
+</body>
+</html>
