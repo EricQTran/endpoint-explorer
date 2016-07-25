@@ -15,49 +15,174 @@
 	form{
 		display: inline-block;
 	}
-	#nav-tab{
-		padding: 10px 10px 10px 10px;
-	}
 
+	#contain{
+		display: inline-block;
+		padding: 5px 5px 5px 5px;
+	}
 	</style>
 </head>
 <body>
 	<div class="page-header">
 		<h1>Super Endpoint Explorer</h1>
 	</div>
+	<!--Jquery for bootstrap-->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-
-
 	<script src="js/bootstrap.min.js"></script>
 
-	<div class="dropdown">
-   	<button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Http Method
+	<div class="dropdown" id="methodDropdown">
+   	<button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" id="httpName">Http Method
  	<span class="caret"></span></button>
  		<ul class="dropdown-menu">
-   			 <li>GET</li>
-   			 <li>POST</li>
+   			 <li><a href=# onclick="changeMethodName('GET');">GET</a></li>
+   			 <li><a href=# onclick="changeMethodName('POST');">POST</a></li>
   		</ul>
 	</div>
 
 	<form>	
-	Custom Request:	<input type="url" name="customRequest" id="customRequestBox">
+	Custom Request:	<input type="url" name="customRequest" id="customRequestBox" placeholder="Type in a URL request">
 	</form>
 
-	<button type="button" class="btn btn-primary" onclick="submitRequest();" id="sendBtn">Send</button>
+	<button type="button" class="btn btn-primary" onclick="sendRequest();" id="sendBtn">Send</button>
+	<button type="button" class="btn btn-primary"  id="saveBtn" data-toggle="modal" data-target="#myModal">Save</button>
 
-	<ul class="nav nav-tabs" id="nav-tab">
- 	 <li><a href="#">Headers</a></li>
-	</ul>
+	<div class="dropdown" id="saveDropdown">
+   	<button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Saved Requests
+ 	<span class="caret"></span></button>
+ 		<ul class="dropdown-menu">
+   			 <li><a href=#>Saved One</a></li>
+  		</ul>
+	</div>
+
+	<div class="container" id="contain">
+    	<ul class="nav nav-tabs">
+    		<li class="active"><a data-toggle="tab" href="#preview">Preview</a></li>
+    		<li><a data-toggle="tab" href="#output">Output</a></li>
+    		<li><a data-toggle="tab" href="#headers">Headers</a></li>
+  		</ul>
+
+  		<div class="tab-content">
+    		<div id="preview" class="tab-pane fade in active">
+      		<h3>Preview</h3>
+      			<p id="previewText">Preview that will be shown here</p>
+    		</div>
+    		<div id="headers" class="tab-pane fade">
+      		<h3>Headers</h3>
+      			<p>Fill out some headers here</p>
+      			<form>
+      				<input type="text" name="headerKey" id="headerKey" placeholder="Key">
+      				<input type="text" name="headerVal" id="headerVal" placeholder="Value">
+      			</form>
+    		</div>
+    		<div id="output" class="tab-pan fade">
+    			<h3>Output</h3>
+    			<p id="requestOutput">Output that will be shown here </p>
+    		</div>
+    
+  		</div>
+	</div>
+
+
+    <div id="myModal" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+
+    	<div class="modal-content">
+    		<div class="modal-header">
+        	<button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Request Name Required</h4>
+      </div>
+      <div class="modal-body">
+        <p>Please specify a name to save your request.</p>
+        <input type="text" name="savedName" placeholder="name" id="savedName">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" onclick="saveRequest();">Save</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 	<script type="text/javascript">
+
+	var httpMethod;
+
+		function changeMethodName(methodName)
+		{
+			var methDropdown = document.getElementById("httpName");
+			methDropdown.innerHTML = methodName;
+			httpMethod = methodName;
+
+		}
 		
 		function submitRequest()
 		{
 			var requestBox = document.getElementById("customRequestBox");
 
+
 			requestBox.value = "bam!"
 		}
 
+		function saveRequest()
+		{
+			var savedName = document.getElementById("savedName").value;
+			var requestBox = document.getElementById("customRequestBox");
+			localStorage.setItem("SavedName: "+ savedName, savedName);
+			alert("localStorage Set!");
+
+			requestBox.value = "its Saved!";
+		}
+
+		function createXHR()
+		{
+   			try { return new XMLHttpRequest(); } catch(e) {}
+   			try { return new ActiveXObject("Msxml2.XMLHTTP.6.0"); } catch (e) {}
+   			try { return new ActiveXObject("Msxml2.XMLHTTP.3.0"); } catch (e) {}
+   			try { return new ActiveXObject("Msxml2.XMLHTTP"); } catch (e) {}
+   			try { return new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) {}
+   
+   			alert("XMLHttpRequest not supported");   
+   			return null;
+		}
+ 
+		function sendRequest()
+		{
+    		var xhr = createXHR();
+    		var theUrl = document.getElementById("customRequestBox").value;
+
+
+
+ 
+		    if (xhr)
+     		{
+     			if(httpMethod == "GET"){
+     				xhr.open("GET",theUrl,true);
+      				xhr.onreadystatechange = function(){handleResponse(xhr);};
+      				xhr.send(null);
+     			}
+     			if(httpMethod == "POST"){
+     				xhr.open("POST", theUrl, true);
+     				xhr.onreadystatechange = function(){handleResponse(xhr);};
+     				xhr.send("true && false");
+     			}
+     		}
+		}
+ 
+		function handleResponse(xhr)
+		{
+  			if (xhr.readyState == 4  && xhr.status == 200)
+    		{
+     			var responseTxt = xhr.responseText;
+     			var responseXml = xhr.responseXML;
+
+     			var preview = document.getElementById('previewText');
+     			var output = document.getElementById('requestOutput');
+     			output.innerHTML = responseXml;
+     			preview.innerHTML = responseTxt;
+     			alert("it worked!");
+    		}
+		}
 
 	</script>
 
