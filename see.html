@@ -8,18 +8,27 @@
 	<link href="css/bootstrap.min.css" rel="stylesheet">
 
 	<style type="text/css">
+
+  .btn{
+    background-color: red;
+  }
 	
+  body{
+    background-color: lightgreen;
+  }
 	.dropdown{
-		display: inline-block;
+		display: inline;
 	}
 	form{
-		display: inline-block;
+		display: inline;
 	}
 
 	#contain{
-		display: inline-block;
+		display: inline;
 		padding: 5px 5px 5px 5px;
 	}
+
+
 	</style>
 </head>
 <body>
@@ -41,6 +50,7 @@
 
 	<form>	
 	Custom Request:	<input type="url" name="customRequest" id="customRequestBox" placeholder="Type in a URL request">
+  Payload: <input type="text" id="payload" placeholder="Type in a payload to be delivered">
 	</form>
 
 	<button type="button" class="btn btn-primary" onclick="sendRequest();" id="sendBtn">Send</button>
@@ -49,9 +59,8 @@
 	<div class="dropdown" id="saveDropdown">
    	<button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Saved Requests
  	<span class="caret"></span></button>
- 		<ul class="dropdown-menu">
-   			 <li><a href=#>Saved One</a></li>
-  		</ul>
+ 		<ul class="dropdown-menu" id="savedList">
+  	</ul>
 	</div>
 
 	<div class="container" id="contain">
@@ -63,16 +72,12 @@
 
   		<div class="tab-content">
     		<div id="preview" class="tab-pane fade in active">
-      		<h3>Preview</h3>
-      			<p id="previewText">Preview that will be shown here</p>
+      		<h3 id="previewHeader">Preview</h3>
     		</div>
     		<div id="headers" class="tab-pane fade">
       		<h3>Headers</h3>
-      			<p>Fill out some headers here</p>
-      			<form>
-      				<input type="text" name="headerKey" id="headerKey" placeholder="Key">
-      				<input type="text" name="headerVal" id="headerVal" placeholder="Value">
-      			</form>
+      			<p id="headers">&nbsp</p>
+      			
     		</div>
     		<div id="output" class="tab-pan fade">
     			<h3>Output</h3>
@@ -96,7 +101,7 @@
         <input type="text" name="savedName" placeholder="name" id="savedName">
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" onclick="saveRequest();">Save</button>
+        <button type="button" class="btn btn-default" onclick="saveRequest();" data-dismiss="modal">Save</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
       </div>
     </div>
@@ -107,6 +112,15 @@
 	<script type="text/javascript">
 
 	var httpMethod;
+
+    function getAllSaved()
+    {
+      for(i=0; i <= localStorage.length-1; i++)
+      {
+        key = localStorage.key(i);
+        alert(localStorage.getItem(key));
+      }
+    }
 
 		function changeMethodName(methodName)
 		{
@@ -127,11 +141,18 @@
 		function saveRequest()
 		{
 			var savedName = document.getElementById("savedName").value;
-			var requestBox = document.getElementById("customRequestBox");
-			localStorage.setItem("SavedName: "+ savedName, savedName);
+			var requestBoxUrl = document.getElementById("customRequestBox");
+			localStorage.setItem(savedName, requestBoxUrl.value);
+      var ul = document.getElementById('savedList');
+      var aRef = document.createElement("a");
+      var li= document.createElement("li");
+      aRef.href="#";
+      aRef.appendChild(document.createTextNode(savedName));
+      li.appendChild(aRef);
+      ul.appendChild(li);
 			alert("localStorage Set!");
+      getAllSaved();
 
-			requestBox.value = "its Saved!";
 		}
 
 		function createXHR()
@@ -150,14 +171,12 @@
 		{
     		var xhr = createXHR();
     		var theUrl = document.getElementById("customRequestBox").value;
+        var thePayload = document.getElementById("payload").value;
 
-
-
- 
 		    if (xhr)
      		{
      			if(httpMethod == "GET"){
-     				xhr.open("GET",theUrl,true);
+     				xhr.open("GET",theUrl+"?"+thePayload,true);
       				xhr.onreadystatechange = function(){handleResponse(xhr);};
       				xhr.send(null);
      			}
@@ -176,11 +195,11 @@
      			var responseTxt = xhr.responseText;
      			var responseXml = xhr.responseXML;
 
-     			var preview = document.getElementById('previewText');
      			var output = document.getElementById('requestOutput');
-     			output.innerHTML = responseXml;
-     			preview.innerHTML = responseTxt;
-     			alert("it worked!");
+     			output.innerHTML = responseTxt;
+          var headers= document.getElementById('headers');
+          headers.innerHTML = xhr.getAllResponseHeaders();
+          console.log(xhr.getAllResponseHeaders());
     		}
 		}
 
