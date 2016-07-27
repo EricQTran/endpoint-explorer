@@ -9,12 +9,54 @@
 
 	<style type="text/css">
 
+  #sendToast {
+    visibility: hidden;
+    min-width: 250px;
+    margin-left: -125px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 2px;
+    padding: 16px;
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    bottom: 30px;
+    font-size: 17px;
+}
+
+.show {
+    visibility: visible !important;
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+@-webkit-keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+
   .btn{
     background-color: red;
   }
 	
   body{
-    background-color: lightgreen;
+    background-color: lightpink;
   }
 	.dropdown{
 		display: inline;
@@ -67,22 +109,35 @@
 
 	<div class="container" id="contain">
     	<ul class="nav nav-tabs">
-    		<li class="active"><a data-toggle="tab" href="#preview">Preview</a></li>
-    		<li><a data-toggle="tab" href="#output">Output</a></li>
-    		<li><a data-toggle="tab" href="#headers">Headers</a></li>
+        <li class="active"><a data-toggle="tab" href="#setHeaders">Set Headers</a></li>
+    		<li><a data-toggle="tab" href="#preview">Request</a></li>
+    		<li><a data-toggle="tab" href="#output">Response</a></li>
+    		<li><a data-toggle="tab" href="#headers">Headers Returned</a></li>
   		</ul>
 
   		<div class="tab-content">
-    		<div id="preview" class="tab-pane fade in active">
-      		<h3 id="previewHeader">Preview</h3>
+      <div id="setHeaders" class="tab-pane fade in active">
+          <h3 id="setHeader">Set Headers</h3>
+
+          <form>  
+            key: <input type="txt" name="headerKey" id="headerKey" placeholder="key">
+            value: <input type="text" id="headerValue" placeholder="value">
+          </form>
+        </div>
+
+    		<div id="preview" class="tab-pane fade">
+      		<h3 id="previewHeader">Request</h3>
+          <h4 id="requestPayload">Payload: </h4>
+          <h4 id="requestHeaders">Headers: </h4>
     		</div>
+
     		<div id="headers" class="tab-pane fade">
-      		<h3>Headers</h3>
-      			<p id="headersText">Make a request for headers to appear</p>
-      			
+      		<h3>Headers Returned</h3>
+      			<p id="headersText">Make a request for headers to be returned</p>
     		</div>
+
     		<div id="output" class="tab-pan fade">
-    			<h3>Output</h3>
+    			<h3>Response</h3>
     			<p id="requestOutput">Output that will be shown here </p>
     		</div>
     
@@ -109,11 +164,42 @@
     </div>
 
   </div>
-</div>
+  </div>
+
+  <div id="sendToast">Your Request has been sent. Check out the Response!</div>
+
 
 	<script type="text/javascript">
 
 	var httpMethod;
+
+  function setRequestPreview()
+  {
+    var requestPay = document.getElementById("requestPayload");
+    var pay = document.getElementById("payload");
+
+    requestPay.value = "Payload: " + pay.value;
+  }
+
+    function getHeaderKey()
+    {
+      if(document.getElementById("headerKey").value != null){
+        return document.getElementById("headerKey").value;
+      }
+    }
+
+    function getHeaderVal()
+    {
+      if(document.getElementById("headerValue").value != null){
+        return document.getElementById("headerValue").value;
+      }
+    }
+
+    function toast() {
+          var toast = document.getElementById("sendToast")
+          toast.className = "show";
+          setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+      } 
 
     function setRequestBox(word){
       var box = document.getElementById("customRequestBox");
@@ -184,8 +270,6 @@
       aRef.appendChild(document.createTextNode(savedName));
       li.appendChild(aRef);
       ul.appendChild(li);
-			alert("localStorage Set!");
-
 		}
 
 		function createXHR()
@@ -207,24 +291,33 @@
     		var theUrl = document.getElementById("customRequestBox").value;
         var thePayload = document.getElementById("payload").value;
 
+        setRequestPreview();
+
 		    if (xhr)
      		{
      			if(httpMethod == "GET"){
      				xhr.open("GET",theUrl+"?"+thePayload,true);
       				xhr.onreadystatechange = function(){handleResponse(xhr);};
       				xhr.send(null);
+              toast();
+
      			}
      			if(httpMethod == "POST"){
      				xhr.open("POST", theUrl, true);
-     				xhr.onreadystatechange = function(){handleResponse(xhr);};
-     				xhr.send("true && false");
+            xhr.onreadystatechange = function(){handleResponse(xhr);};
+            xhr.setRequestHeader(getHeaderKey(), getHeaderVal());
+     				xhr.send(thePayload);
+            toast();
      			}
           if(httpMethod =="HEAD"){
             xhr.open("HEAD", theUrl, true);
+
             xhr.onreadystatechange = function(){handleResponse(xhr);};
-            xhr.send("true && false");
+            xhr.send(thePayload);
+            toast();
           }
      		}
+        
 		}
  
 		function handleResponse(xhr)
@@ -238,7 +331,6 @@
      			output.innerHTML = responseTxt;
           var headers= document.getElementById('headersText');
           headers.innerHTML = xhr.getAllResponseHeaders();
-          console.log(xhr.getAllResponseHeaders());
     		}
 		}
 
