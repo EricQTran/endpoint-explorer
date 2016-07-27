@@ -126,9 +126,10 @@
         </div>
 
     		<div id="preview" class="tab-pane fade">
-      		<h3 id="previewHeader">Request</h3>
+          <h4 id="requestMethod">Request Method: </h4>
+          <h4 id="requestUrl">URL: </h4>
           <h4 id="requestPayload">Payload: </h4>
-          <h4 id="requestHeaders">Headers: </h4>
+          <h4 id="requestHeaders">Headers Manually Set: </h4>
     		</div>
 
     		<div id="headers" class="tab-pane fade">
@@ -173,14 +174,6 @@
 
 	var httpMethod;
 
-  function setRequestPreview()
-  {
-    var requestPay = document.getElementById("requestPayload");
-    var pay = document.getElementById("payload");
-
-    requestPay.value = "Payload: " + pay.value;
-  }
-
     function getHeaderKey()
     {
       if(document.getElementById("headerKey").value != null){
@@ -222,7 +215,7 @@
           aRef.href= "#";
           aRef.appendChild(document.createTextNode(concat));
           li.appendChild(aRef);
-          li.onclick = setRequestBox(theKey);
+          li.onclick = setRequestBox(concat);
           ul.appendChild(li);
         }
       }
@@ -248,14 +241,6 @@
 			methDropdown.innerHTML = methodName;
 			httpMethod = methodName;
 
-		}
-		
-		function submitRequest()
-		{
-			var requestBox = document.getElementById("customRequestBox");
-
-
-			requestBox.value = "bam!"
 		}
 
 		function saveRequest()
@@ -290,30 +275,44 @@
     		var xhr = createXHR();
     		var theUrl = document.getElementById("customRequestBox").value;
         var thePayload = document.getElementById("payload").value;
+        var reqPay = document.getElementById("requestPayload");
+        var reqUrl = document.getElementById("requestUrl");
+        var reqHeaders= document.getElementById("requestHeaders");
+        var headKey = document.getElementById("headerKey").value;
+        var headVal = document.getElementById("headerValue").value;
 
-        setRequestPreview();
+        var requestMeth = document.getElementById("requestMethod");
+
+
+        reqUrl.innerHTML = "Request URL: " + theUrl;
+        reqPay.innerHTML = "Payload: " +thePayload;
+        reqHeaders.innerHTML = "Headers Manually Set: "+ headKey + " --> " +headVal;
 
 		    if (xhr)
      		{
      			if(httpMethod == "GET"){
+            requestMeth.innerHTML = "Http Method: GET";
      				xhr.open("GET",theUrl+"?"+thePayload,true);
       				xhr.onreadystatechange = function(){handleResponse(xhr);};
-      				xhr.send(null);
+      				xhr.send(thePayload);
               toast();
 
      			}
      			if(httpMethod == "POST"){
-     				xhr.open("POST", theUrl, true);
+            requestMeth.innerHTML = "Http Method: POST";
+
+     				xhr.open("POST", theUrl+"?"+thePayload, true);
             xhr.onreadystatechange = function(){handleResponse(xhr);};
-            xhr.setRequestHeader(getHeaderKey(), getHeaderVal());
      				xhr.send(thePayload);
             toast();
      			}
           if(httpMethod =="HEAD"){
-            xhr.open("HEAD", theUrl, true);
+            requestMeth.innerHTML = "Http Method: HEAD";
 
+            xhr.open("HEAD", theUrl+"?"+thePayload, true);
             xhr.onreadystatechange = function(){handleResponse(xhr);};
             xhr.send(thePayload);
+
             toast();
           }
      		}
@@ -326,6 +325,7 @@
     		{
      			var responseTxt = xhr.responseText;
      			var responseXml = xhr.responseXML;
+
 
      			var output = document.getElementById('requestOutput');
      			output.innerHTML = responseTxt;
